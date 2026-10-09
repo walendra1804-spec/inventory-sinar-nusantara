@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\GudangController;
 use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\TransaksiController;
+use Illuminate\Support\Facades\Auth;
 
 // halaman login (hanya untuk yang BELUM login)
 Route::middleware('guest')->group(function () {
@@ -15,13 +17,22 @@ Route::middleware('guest')->group(function () {
 
 // semua route di bawah ini WAJIB login
 Route::middleware('auth')->group(function () {
+    // halaman awal: admin ke dashboard, operator ke transaksi
     Route::get('/', function () {
-        return view('home.dashboard');
+        if (Auth::user()->role == 'admin') {
+            return redirect()->route('dashboard.index');
+        }
+        return redirect()->route('transaksi.index');
     });
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // khusus admin: master data & laporan (diisi di Fase 4 & 8)
     Route::middleware('role:admin')->group(function () {
+        // dashboard
+        Route::get('/dashboard', function () {
+            return view('home.dashboard');
+        })->name('dashboard.index');
+
         // barang
         Route::get('/barang', [BarangController::class, 'index'])->name('barang.index');
         Route::get('/barang/tambah', [BarangController::class, 'create'])->name('barang.create');
@@ -47,6 +58,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/pelanggan/hapus/{id}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
     });
 
-    // admin & operator: transaksi (diisi di Fase 5 & 6)
+    // admin & operator: transaksi
+    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
+    Route::get('/transaksi/tambah/{jenis}', [TransaksiController::class, 'create'])->name('transaksi.create')->whereIn('jenis', ['masuk', 'penjualan', 'transfer']);
+    Route::post('/transaksi/simpan/{jenis}', [TransaksiController::class, 'store'])->name('transaksi.store')->whereIn('jenis', ['masuk', 'penjualan', 'transfer']);
+    Route::get('/transaksi/detail/{id}', [TransaksiController::class, 'show'])->name('transaksi.show');
 
 });

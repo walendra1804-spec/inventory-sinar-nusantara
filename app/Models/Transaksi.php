@@ -32,4 +32,12 @@ class Transaksi extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // total nilai transaksi = jumlah x harga dari semua detail
+    public function total()
+    {
+        return $this->detail->sum(function ($d) {
+            return $d->jumlah * $d->harga;
+        });
+    }
 }
