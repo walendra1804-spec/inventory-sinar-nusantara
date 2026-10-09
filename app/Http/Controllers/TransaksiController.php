@@ -137,4 +137,52 @@ class TransaksiController extends Controller
         $mutasi = StokMutasi::where('transaksi_id', $id)->get();
         return view('home.transaksi.show', compact('transaksi', 'mutasi'));
     }
+
+    public function batal(string $id)
+    {
+        //1. MULAI TRANSAKSI DATABASE
+        DB::beginTransaction();
+
+        //ambil kartu stok dari transaksi ini, lalu kunci barangnya (sama seperti saat simpan)
+        $mutasi = StokMutasi::where('transaksi_id', $id)->lockForUpdate()->get();
+        Barang::whereIn('id', $mutasi->pluck('barang_id'))->lockForUpdate()->get();
+
+        //2. CEK: transaksi yang sudah batal tidak bisa dibatalkan lagi
+        $transaksi = Transaksi::find($id);
+        if ($transaksi->status == 'batal') {
+            DB::rollBack();
+            return back()->with('error', 'Transaksi ini sudah dibatalkan sebelumnya');
+        }
+
+        //3. CEK STOK: kalau dibalik, stok tidak boleh jadi minus
+        //contoh: barang masuk 10 mau dibatalkan, tapi 8 sudah terjual -> sisa 2, tidak bisa dikurangi 10
+        foreach ($mutasi as $m) {
+            if ($m->jumlah > 0) {
+                $stok = StokMutasi::stok($m->barang_id, $m->gudang_id);
+                if ($stok < $m->jumlah) {
+                    DB::rollBack();
+                    return back()->with('error', 'Tidak bisa dibatalkan. Stok ' . $m->barang->nama_barang . ' di ' . $m->gudang->nama_gudang . ' sudah terpakai. Sisa stok: ' . $stok);
+                }
+            }
+        }
+
+        //4. BUAT KARTU STOK KEBALIKANNYA (+ jadi -, - jadi +). data lama TIDAK dihapus
+        foreach ($mutasi as $m) {
+            StokMutasi::create([
+                'transaksi_id' => $transaksi->id,
+                'barang_id' => $m->barang_id,
+                'gudang_id' => $m->gudang_id,
+                'jumlah' => -$m->jumlah,
+                'keterangan' => 'Batal ' . $transaksi->no_transaksi . ' oleh ' . Auth::user()->name,
+            ]);
+        }
+
+        //5. UBAH STATUS JADI BATAL
+        $transaksi->update(['status' => 'batal']);
+
+        //6. SELESAI, SIMPAN PERMANEN
+        DB::commit();
+
+        return redirect()->route('transaksi.show', $id)->with('success', 'Transaksi berhasil dibatalkan');
+    }
 }

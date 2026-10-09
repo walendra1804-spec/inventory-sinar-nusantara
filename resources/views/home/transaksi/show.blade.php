@@ -107,6 +107,17 @@
                         </table>
 
                         <a class="btn btn-warning" href="{{ route('transaksi.index') }}">Kembali</a>
+
+                        {{-- tombol batal hanya muncul jika transaksi belum dibatalkan --}}
+                        @if ($transaksi->status == 'selesai')
+                            <form action="{{ route('transaksi.batal', $transaksi->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Yakin mau membatalkan transaksi ini? Stok akan dikembalikan.')">
+                                    Batalkan Transaksi
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
             </div>

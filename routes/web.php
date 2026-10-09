@@ -63,5 +63,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/transaksi/tambah/{jenis}', [TransaksiController::class, 'create'])->name('transaksi.create')->whereIn('jenis', ['masuk', 'penjualan', 'transfer']);
     Route::post('/transaksi/simpan/{jenis}', [TransaksiController::class, 'store'])->name('transaksi.store')->whereIn('jenis', ['masuk', 'penjualan', 'transfer']);
     Route::get('/transaksi/detail/{id}', [TransaksiController::class, 'show'])->name('transaksi.show');
+    Route::post('/transaksi/batal/{id}', [TransaksiController::class, 'batal'])->name('transaksi.batal');
 
 });
