@@ -4,7 +4,9 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GudangController;
+use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\TransaksiController;
 use Illuminate\Support\Facades\Auth;
@@ -26,12 +28,10 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // khusus admin: master data & laporan (diisi di Fase 4 & 8)
+    // khusus admin: dashboard, master data & laporan
     Route::middleware('role:admin')->group(function () {
         // dashboard
-        Route::get('/dashboard', function () {
-            return view('home.dashboard');
-        })->name('dashboard.index');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
         // barang
         Route::get('/barang', [BarangController::class, 'index'])->name('barang.index');
@@ -56,6 +56,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/pelanggan/edit/{id}', [PelangganController::class, 'edit'])->name('pelanggan.edit');
         Route::post('/pelanggan/update/{id}', [PelangganController::class, 'update'])->name('pelanggan.update');
         Route::get('/pelanggan/hapus/{id}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
+
+        // laporan
+        Route::get('/laporan/stok', [LaporanController::class, 'stok'])->name('laporan.stok');
+        Route::get('/laporan/{jenis}', [LaporanController::class, 'transaksi'])->name('laporan.transaksi')->whereIn('jenis', ['masuk', 'penjualan']);
     });
 
     // admin & operator: transaksi

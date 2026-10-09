@@ -12,4 +12,9 @@ class TransaksiDetail extends Model
     {
         return $this->belongsTo(Barang::class);
     }
+
+    public function transaksi()
+    {
+        return $this->belongsTo(Transaksi::class);
+    }
 }

@@ -41,6 +41,35 @@
           </li>
         </ul>
       </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <i class="nav-icon fas fa-file-alt"></i>
+          <p>
+            Laporan
+            <i class="fas fa-angle-left right"></i>
+          </p>
+        </a>
+        <ul class="nav nav-treeview">
+          <li class="nav-item">
+            <a href="{{ route('laporan.stok') }}" class="nav-link">
+              <i class="far fa-circle nav-icon"></i>
+              <p>Laporan Stok</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ route('laporan.transaksi', 'masuk') }}" class="nav-link">
+              <i class="far fa-circle nav-icon"></i>
+              <p>Laporan Barang Masuk</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ route('laporan.transaksi', 'penjualan') }}" class="nav-link">
+              <i class="far fa-circle nav-icon"></i>
+              <p>Laporan Penjualan</p>
+            </a>
+          </li>
+        </ul>
+      </li>
     @endif
     <li class="nav-item">
       <a href="#" class="nav-link">
